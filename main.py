@@ -1,4 +1,3 @@
-# Wallethub 2019
 # Luis Castro
 #
 # Main function to train the model.
