@@ -1,4 +1,3 @@
-# Wallethub 2019
 # Luis Castro
 #
 # Collection of auxiliary functions
