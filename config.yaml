@@ -1,0 +1,157 @@
+# Wallethub 2019
+# Luis Castro
+#
+# This configuration file aims to provide full control of the parameters need to find
+# the best hyper parameters for Light GBM and Xgboost using Bayesian Optimization.
+# Each section of the configuration file is targeted for a specific part.
+# - Config:
+# -- file_path: Path to the file to be used to train the models (the dataset)
+# -- target: The name of the column to be predicted in the dataset, the target variable.
+# -- n_fold: # of folds to be used in KFold crossvalidation
+# -- shuffle: Whether to shuffle the data before creating the folds
+# -- random_state: seed for the random state (for reproducibility)
+# -- num_boost_rounds: For this boosting algorithms (both) the number of boosting rounds to run while training
+# -- early_stopping_rounds: If no improvement is seen in this # of rounds, stop training
+# -- verbose: How verbose will the Bayesian Optimization algorithm will be (more is more)
+# -- verbose_eval: How verbose will the boosting algorithms will be (more is more)
+# -- algorithm: Can take values 'lgb', 'xgb' or both if both are to be used. If only using one be sure to modify the 
+#               bounds section to not include the bounds for the other algorithm (will slow the parameter search)
+# -- bo_optimize: Can take tree values, 'rmse' (root mean squared error), 'mae' (mean absolute error) and 
+#                 'mae_t' (mean absolute error beyond a threshold)
+# -- threshold: Max absolute error difference to be considered a right / wrong prediction
+# -- feat_imp_path: Path to save a file which contains the feature imporance (gain) for each feature as seen 
+#                   by the ML algorithms
+# -- ints: This implementation of Bayesian Optimization can only deal with floats, and there are some parameters 
+#          that need to be ints for the algorithms to work, here they are specified.
+# -- floats: Same but with floats (just a precaution)
+# -- strs: Same but with strings
+
+config:
+  file_path: 'X_rs.csv.gz'
+  target: 'y'
+  n_fold: 4
+  shuffle: True
+  random_state: 0
+  num_boost_round: 2048
+  early_stopping_rounds: 32
+  verbose: 0
+  verbose_eval: 0
+  algorithm: 'both'
+  bo_optimize: 'rmse'
+  threshold: 3
+  feat_imp_path: 'feature_importance.csv'
+  ints:
+    - 'max_depth_lgb'
+    - 'max_depth_xgb'
+  floats:
+    - 'colsample_bytree'
+    - 'colsample_bylevel'
+    - 'colsample_bynode'
+    - 'reg_alpha_lgb'
+    - 'reg_lambda_lgb'
+    - 'reg_alpha_xgb'
+    - 'reg_lambda_xgb'
+    - 'bagging_fraction'
+    - 'feature_fraction'
+  strs:
+    - 'booster'
+
+
+# - bayesian
+# -- bo_seeds: # of random starting points
+# -- bo_iter: # of iterations to run
+# -- acq: Type of acquisition function to use 'ucb' upper confidence bound,  'ei' expected improvement or 
+#         'poi' probability of improvement
+# -- run_l: True If there have been previous runs of the algorithm and want to load the logs so the algorithm
+#           learns that information, else False
+# -- log_in: Path to the log file to be read
+# -- log_out: Path to write the log files
+# -- also see: https://github.com/fmfn/BayesianOptimization
+
+bayesian:
+  bo_seeds: 8
+  bo_iter: 64 
+  acq: 'ucb'
+  run_l: False
+  log_in: 'logs/log.json'
+  log_out: 'logs/' 
+
+
+# - params_lgb
+# -- Go to: https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMModel.html#lightgbm.LGBMModel
+
+params_lgb:
+  objective: 'regression'
+  save_binary: True
+  random_state: 0
+  feature_fraction_seed: 0
+  bagging_seed: 0
+  drop_seed: 0
+  data_random_seed: 0
+  boosting_type: 'gbdt'
+  verbose: 0
+  metric: 'rmse'
+  device: 'gpu'
+  gpu_platform_id: 0
+  gpu_device_id: 0
+
+
+# - params_xgb
+# -- Go to: https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn
+
+params_xgb:
+  booster: 'gbtree'
+  silent: True
+  verbose: 0
+  tree_method: 'gpu_hist'
+  process_type: 'default'
+  predictor: 'gpu_predictor'
+  objective: 'reg:squarederror'
+  eval_metric: 'rmse'
+  random_state: 0
+  eta: 0.1
+
+# - bounds
+# -- For the hyperparamters to be optimized on each ML algorithm, provide a range or bounds
+#    to the values they can have, this will be the searching space for the BO algorithm.
+#    To search for other hyperparameters, just add the name and the range in a similar fashion
+#    to the one below (add them too to the corresponding feature type in the first section of the
+#    configuration file)
+
+bounds:
+  colsample_bytree:
+    - 0.5
+    - 1.0
+  colsample_bylevel: 
+    - 0.5
+    - 1.0
+  colsample_bynode:
+    - 0.5
+    - 1.0
+  bagging_fraction:
+    - 0.5
+    - 1.0
+  feature_fraction:
+    - 0.1
+    - 1.0
+  max_depth_xgb:
+    - 5
+    - 15
+  reg_alpha_xgb:
+    - 0
+    - 2
+  reg_lambda_xgb:
+    - 0
+    - 2
+  max_depth_lgb:
+    - 5
+    - 15
+  reg_alpha_lgb:
+    - 0
+    - 2
+  reg_lambda_lgb:
+    - 0
+    - 2
+  balance:
+    - 0.40
+    - 0.60
