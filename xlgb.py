@@ -1,4 +1,3 @@
-# Wallethub 2019
 # Luis Castro
 #
 # "Black-box" class that receives hyperparameters from the BO algorithm and 
